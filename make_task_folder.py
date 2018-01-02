@@ -5,7 +5,6 @@ from sys import argv
 import re
 import xmlrpclib
 import amkarthik
-import pdb
 
 script, task_id = argv
 
@@ -40,7 +39,6 @@ if task_detail:
     task_dict = task_detail[0]
     file_name = 'info_{0}.txt'.format(task_dict['id'])
     folder_name = ('{1}{0}'.format(task_dict['name'],'_')).lower().replace(' ','_')
-    pdb.set_trace()
     location = LOCATIONS.get(task_dict.get('project_id') and task_dict['project_id'][0], False)
     if not location:
         project_name = (task_dict.get('project_id') and task_dict['project_id'][1]).replace(' ','_').encode('UTF-8').lower()
