@@ -2,6 +2,7 @@
 
 from sys import argv
 import subprocess
+import getpass
 try:
     import pysvn
 except ImportError:
@@ -23,7 +24,12 @@ for root, dirs, files in os.walk(SOURCE_DIR):
 
 not_updated = []
 #updated = []
+def get_login(realm=True, username='karthik', may_save=True):
+    password = getpass.getpass()
+    return True, 'karthik', password, True
 client = pysvn.Client()
+client.callback_get_login = get_login
+
 for path in path_list:
     print "=================================================="
     print "Updating the path ", path
