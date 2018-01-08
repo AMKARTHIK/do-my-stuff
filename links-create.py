@@ -6,10 +6,13 @@ from pprint import pprint
 from sys import argv
 
 script, source, dest = argv
+OKBLUE = '\033[94m'
+ENDC = '\033[0m'
+FAIL = '\033[91m'
 
 
-SOURCE_DIR = source
-DEST_DIT = dest
+SOURCE_DIR = os.path.abspath(source)
+DEST_DIT = os.path.abspath(dest)
 
 if not os.path.isdir(DEST_DIT):
     os.makedirs(DEST_DIT)
@@ -36,7 +39,8 @@ for key, val in check_links_folders.iteritems():
             src = "{0}/{1}/{2}".format(SOURCE_DIR, key, v)
             dst = link
             os.symlink(src, dst)
-            print "softlinks created from {0} to {1}".format(src, dst)
+            print "softlinks created from {2}{0}{3} to {2}{1}{3}".format(src,
+                    dst,OKBLUE,ENDC)
 
 # delete the broken link
 
@@ -49,4 +53,4 @@ broken_links = [x for x in next(os.walk(DEST_DIT))[2]]
 for blink in broken_links:
     broken_link_path = '{0}/{1}'.format(DEST_DIT, blink)
     os.unlink(broken_link_path)
-    print "The {0} link removed from the DEST DIR".format(broken_link_path)
+    print "The {2}{0}{1} link removed from the DEST DIR".format(broken_link_path,ENDC,FAIL)
