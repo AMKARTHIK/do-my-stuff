@@ -5,7 +5,7 @@ import subprocess
 
 apps_to_start = [
         'firefox -p default',
-        'firefox -p Odoo --new-tab=www.gaana.com',
+        '/home/harmony/Desktop/Karthik/firefox/firefox -p Odoo --new-tab=www.gaana.com',
         'hexchat',
         'thunderbird',
         'google-chrome --app-id=knipolnnllmklapflnccelgolnpehhpl',
