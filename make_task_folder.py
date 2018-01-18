@@ -50,16 +50,19 @@ if task_detail:
     if not os.path.isdir(dir_name):
         os.makedirs(dir_name)
     mkfile = os.path.join(dir_name, file_name)
-    with open(mkfile, "a") as my_file:
-        description = task_dict.get('description')
-        if description:
-            description = description.encode('UTF-8')
-            my_file.write('Specs: \n{0}'.format(description))
-        customer_description = task_dict.get('x_customer_description')
-        if customer_description:
-            customer_description = customer_description.encode('UTF-8')
-            my_file.write('\n\nCustomer Specs: \n{0}'.format(customer_description))
-    print "Task folder created in {0}".format(project_name)
+    if os.path.isfile(mkfile):
+        print "Task folder and its files already created in {0}".format(project_name)
+    if not os.path.isfile(mkfile):
+        with open(mkfile, "a") as my_file:
+            description = task_dict.get('description')
+            if description:
+                description = description.encode('UTF-8')
+                my_file.write('Specs: \n{0}'.format(description))
+            customer_description = task_dict.get('x_customer_description')
+            if customer_description:
+                customer_description = customer_description.encode('UTF-8')
+                my_file.write('\n\nCustomer Specs: \n{0}'.format(customer_description))
+        print "Task folder created in {0}".format(project_name)
 
 
 
