@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
-from sys import argv
+import argparse
 import subprocess
 import getpass
+from dotenv import load_dotenv
+load_dotenv()
 try:
     import pysvn
 except ImportError:
@@ -10,7 +12,12 @@ except ImportError:
     import pysvn
 import os
 
-script, SOURCE_DIR = argv
+
+parser = argparse.ArgumentParser()
+parser.add_argument("source", help="Path that contains svn repos")
+args = parser.parse_args()
+SOURCE_DIR = args.source
+
 
 
 path_list = []
@@ -25,7 +32,7 @@ for root, dirs, files in os.walk(SOURCE_DIR):
 not_updated = []
 #updated = []
 def get_login(realm=True, username='karthik', may_save=True):
-    password = getpass.getpass()
+    password = os.environ.get('SVN_PASS') or getpass.getpass()
     return True, 'karthik', password, True
 client = pysvn.Client()
 client.callback_get_login = get_login

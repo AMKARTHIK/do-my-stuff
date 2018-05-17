@@ -6,6 +6,9 @@ from email.MIMEText import MIMEText
 from random import choice
 from sys import argv
 
+from dotenv import load_dotenv
+load_dotenv()
+
 script, time = argv
 
 MSG = [
@@ -13,9 +16,9 @@ MSG = [
         'As I got struck in railway track, toady I came {0} minutes lately to the office.',
         'As I got struck in traffic, today I came {0} minutes lately to the office.',
         ]
-SENDER = 'karthik@sodexis.com'
-RECIVER = 'v.s.elangovan@sodexis.com'
-pwd = 'Karthik1@'
+SENDER = os.environ.get('SENDER')
+RECIVER = os.environ.get('RECIVER')
+pwd = os.environ.get('PWD')
 
 # frame msg
 msg = MIMEMultipart()

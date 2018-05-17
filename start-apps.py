@@ -9,7 +9,7 @@ apps_to_start = [
         'hexchat',
         'thunderbird',
         'google-chrome --app-id=knipolnnllmklapflnccelgolnpehhpl',
-        'terminator'
+        'tilix'
         ]
 
 for app in apps_to_start:

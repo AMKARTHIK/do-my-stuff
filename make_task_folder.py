@@ -4,21 +4,24 @@ import os
 from sys import argv
 import re
 import xmlrpclib
-import amkarthik
+from dotenv import load_dotenv
+load_dotenv()
 
 script, task_id = argv
 
-server = amkarthik.ODOO_SERVER
-db = amkarthik.ODOO_DB
-user = amkarthik.ODOO_USER
-pwd = amkarthik.ODOO_PWD
+server = os.environ.get('ODOO_SERVER')
+db = os.environ.get('ODOO_DB')
+user = os.environ.get('ODOO_USER')
+pwd = os.environ.get('ODOO_PWD')
 
 BASE_HOME = '/home/harmony/Desktop/'
 
 LOCATIONS = {
         51:'/home/harmony/Desktop/Extraction',
+        56:'/home/harmony/Desktop/Extraction',
         6:'/home/harmony/Desktop/Sodexis',
         43:'/home/harmony/Desktop/Jodee',
+        55:'/home/harmony/Desktop/Jodee',
         35:'/home/harmony/Desktop/Sohre',
         8:'/home/harmony/Desktop/SF',
         50:'/home/harmony/Desktop/Trinity',
