@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/home/harmony/Desktop/Karthik/karthik/DO-MY-STUFF/.venv/bin/python
 
 import os
 from sys import argv
@@ -43,7 +43,8 @@ if task_detail:
     file_name = 'info_{0}.txt'.format(task_dict['id'])
     folder_name = ('{1}{0}'.format(task_dict['name'],'_')).lower().replace(' ','_')
     location = LOCATIONS.get(task_dict.get('project_id') and task_dict['project_id'][0], False)
-    project_name = (task_dict.get('project_id') and task_dict['project_id'][1]).replace(' ','_').encode('UTF-8').lower()
+    project_name = (task_dict.get('project_id') and
+            task_dict['project_id'][1]).replace(' ','_').replace('/','_').encode('UTF-8').lower()
     if not location:
         location = os.path.join(BASE_HOME, project_name)
         if not os.path.isdir(location):
@@ -65,7 +66,7 @@ if task_detail:
             if customer_description:
                 customer_description = customer_description.encode('UTF-8')
                 my_file.write('\n\nCustomer Specs: \n{0}'.format(customer_description))
-        print "Task folder created in {0}".format(project_name)
+        print "Task folder created in {0}".format(dir_name)
 
 
 

@@ -16,6 +16,8 @@ requests = "*"
 "beautifulsoup4" = "*"
 xlrd = "*"
 python-dotenv = "*"
+pyotp = "*"
+pyperclip = "*"
 
 
 [requires]
