@@ -30,10 +30,10 @@ api = xmlrpclib.ServerProxy('%s/xmlrpc/2/object' % server)
 att_id =  api.execute_kw(db, uid, pwd, 'hr.attendance', 'search',[[['sheet_id','=',sheet_id]]])
 print sorted(att_id)
 
-#  att_detail =  api.execute_kw(db, uid, pwd, 'hr.attendance', 'read', [34693])
-#  pp(att_detail)
+# att_detail =  api.execute_kw(db, uid, pwd, 'hr.attendance', 'read', [37978])
+# pp(att_detail)
 
-#  api.execute_kw(db, uid, pwd, 'hr.attendance', 'write', [[34693],{'check_out':'2018-04-13 18:05:33'}])
+# api.execute_kw(db, uid, pwd, 'hr.attendance', 'write', [[37978],{'check_in':'2018-10-22 08:58:28'}])
 
-#  att_detail =  api.execute_kw(db, uid, pwd, 'hr.attendance', 'read', [34693])
-#  pp(att_detail)
+# att_detail =  api.execute_kw(db, uid, pwd, 'hr.attendance', 'read', [37978])
+# pp(att_detail)
