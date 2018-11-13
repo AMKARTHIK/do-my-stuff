@@ -1,16 +1,11 @@
 [[source]]
-
 url = "https://pypi.python.org/simple"
 verify_ssl = true
 name = "pypi"
 
-
 [dev-packages]
 
-
-
 [packages]
-
 "psycopg2" = "*"
 requests = "*"
 "beautifulsoup4" = "*"
@@ -18,8 +13,7 @@ xlrd = "*"
 python-dotenv = "*"
 pyotp = "*"
 pyperclip = "*"
-
+"pygit2" = "*"
 
 [requires]
-
 python_version = "2.7"
