@@ -1,19 +1,26 @@
 #!/home/harmony/Desktop/Karthik/karthik/DO-MY-STUFF/.venv/bin/python
 
 import os
+import sys
 from sys import argv
 import re
 import xmlrpclib
 import argparse
 import pyperclip
 import pdb
+from datetime import datetime
 
 parser = argparse.ArgumentParser()
 parser.add_argument('id', type=int, help='Enter the task or issue id to create task folder')
 parser.add_argument('-i', '--issue', action='store_true')
+parser.add_argument('-c', '--communications', action='store_true')
+parser.add_argument('-u', '--update', action='store_true')
+
 args = parser.parse_args()
 task_id = args.id
 is_issue = args.issue
+need_communication = args.communications
+update = args.update
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -24,84 +31,74 @@ server = os.environ.get('ODOO_SERVER')
 db = os.environ.get('ODOO_DB')
 user = os.environ.get('ODOO_USER')
 pwd = os.environ.get('ODOO_PWD')
+base_home = os.environ.get('PROJECT_BASE_HOME')
 
-BASE_HOME = '/home/harmony/Desktop/'
-
-LOCATIONS = {
-        51:'/home/harmony/Desktop/Extraction',
-        56:'/home/harmony/Desktop/Extraction',
-        6:'/home/harmony/Desktop/Sodexis',
-        43:'/home/harmony/Desktop/Jodee',
-        55:'/home/harmony/Desktop/Jodee',
-        35:'/home/harmony/Desktop/Sohre',
-        8:'/home/harmony/Desktop/SF',
-        50:'/home/harmony/Desktop/Trinity',
-        52:'/home/harmony/Desktop/Sublimation',
-        21:'/home/harmony/Desktop/Trillium',
-        41:'/home/harmony/Desktop/Conservation'
-        }
+def clean_name(name):
+    name = re.sub(r'/', ' or ', name)
+    name = re.sub(r'&', ' and ', name)
+    not_allowed_chars_pattern = r'[^a-zA-Z0-9.-_]'
+    return re.sub(not_allowed_chars_pattern, '_', name).lower()
 
 common = xmlrpclib.ServerProxy('%s/xmlrpc/2/common' % server)
 uid = common.authenticate(db, user, pwd, {})
-
-
 api = xmlrpclib.ServerProxy('%s/xmlrpc/2/object' % server)
 
 model = 'project.task'
 field_list = ['name','description','x_customer_description','project_id']
 if is_issue:
     model = 'project.issue'
-    field_list = ['name','description','project_id','message_ids']
+    field_list = ['name','description','project_id']
+if need_communication or update:
+    field_list += ['message_ids']
 
-detail =  api.execute_kw(db, uid, pwd, model, 'read',[[task_id], field_list])
-    # def search_read(self, domain=None, fields=None, offset=0, limit=None, order=None):
-# pdb.set_trace()
+details =  api.execute_kw(db, uid, pwd, model, 'read',[[task_id], field_list])
 
-if detail:
-    task_dict = detail[0]
-    file_name = 'info_{0}.txt'.format(task_dict['id'])
-    folder_name = ('{1}{0}'.format(task_dict['name'].encode('UTF-8'),'_')).lower().replace(' ','_')
-    location = LOCATIONS.get(task_dict.get('project_id') and task_dict['project_id'][0], False)
-    project_name = (task_dict.get('project_id') and
-            task_dict['project_id'][1]).replace(' ','_').replace('/','_').encode('UTF-8').lower()
-    if not location:
-        location = os.path.join(BASE_HOME, project_name)
-        if not os.path.isdir(location):
-            os.makedirs(location)
-    msg_details = False
+if details:
+    detail = details[0]
+    description = detail.get('description', False)
+    customer_description = detail.get('x_customer_description', False)
+    project_name = clean_name(detail['project_id'][1])
+    task_name = '_' + clean_name(detail['name'])
+    project_location = os.path.join(base_home, project_name)
     if is_issue:
-        msg_details = api.execute_kw(db, uid, pwd, 'mail.message', 'search_read', [[('author_id.id','!=',3),('id','in',task_dict['message_ids'])]],{'fields':['id','author_id','body'], 'order':'id'})
-        location = os.path.join(location, 'Issues')
-        if not os.path.isdir(location):
-            os.makedirs(location)
+        project_location = os.path.join(project_location, 'Issues')
+    task_location = os.path.join(project_location, task_name)
+    file_name = 'info_{0}.txt'.format(detail['id'])
+    file_path = os.path.join(task_location, file_name)
 
-    dir_name = unicode(os.path.join(location,folder_name))
-    if not os.path.isdir(dir_name):
-        os.makedirs(dir_name)
-    mkfile = unicode(os.path.join(dir_name, file_name))
-    if os.path.isfile(mkfile):
-        pyperclip.copy(str(dir_name))
-        os.system("notify-send 'Task folder and its files already created in {0}'".format(dir_name))
-    if not os.path.isfile(mkfile):
-        with open(mkfile, "a") as my_file:
-            description = task_dict.get('description')
+    if os.path.isdir(task_location) and os.path.isfile(file_path) and not update:
+        pyperclip.copy(str(task_location))
+        os.system("notify-send 'Task folder and its files already created in {0}'".format(task_location))
+
+    if not os.path.isdir(task_location):
+        os.makedirs(task_location)
+        pyperclip.copy(str(task_location))
+        os.system("notify-send 'Task folder created in {0}'".format(task_location))
+        with open(file_path, "a") as my_file:
             if description:
-                description = description.encode('UTF-8')
                 my_file.write('Specs: \n{0}'.format(description))
-            customer_description = task_dict.get('x_customer_description')
             if customer_description:
                 customer_description = customer_description.encode('UTF-8')
                 my_file.write('\n\nCustomer Specs: \n{0}'.format(customer_description))
-            if msg_details:
-                my_file.write('\n\nCommunications:\n')
-                for msg in msg_details:
-                    if msg['body']:
-                        text = re.sub('<.*?>', '\n', msg['body'])
-                        text = re.sub('\n+', '\n', text)
-                        my_file.write('\n{0}{1}\n'.format(msg['author_id'][-1], text.encode('UTF-8')))
-        pyperclip.copy(str(dir_name))
-        os.system("notify-send 'Task folder created in {0}'".format(dir_name))
+            if need_communication:
+                msg_details = api.execute_kw(db, uid, pwd, 'mail.message', 'search_read', [[('author_id.id','!=',3),('id','in',detail['message_ids'])]],{'fields':['id','author_id','body'], 'order':'id'})
+                if msg_details:
+                    my_file.write('\n\nCommunications:\n')
+                    for msg in msg_details:
+                        if msg['body']:
+                            text = re.sub('<.*?>', '\n', msg['body'])
+                            text = re.sub('\n+', '\n', text)
+                            my_file.write('\n{0}{1}\n'.format(msg['author_id'][-1], text.encode('UTF-8')))
 
-
-
-
+    if update:
+        with open(file_path, "a") as my_file:
+            pyperclip.copy(str(task_location))
+            os.system("notify-send 'Message updated in Task folder {0}'".format(task_location))
+            today = datetime.today().strftime('%Y-%m-%d')
+            my_file.write('\nNew Messages on {}\n'.format(today))
+            msg_details = api.execute_kw(db, uid, pwd, 'mail.message', 'search_read', [[('author_id.id','!=',3),('id','in',detail['message_ids'])]],{'fields':['id','author_id','body'], 'order':'id'})
+            for msg in msg_details:
+                if msg['body']:
+                    text = re.sub('<.*?>', '\n', msg['body'])
+                    text = re.sub('\n+', '\n', text)
+                    my_file.write('\n{0}{1}\n'.format(msg['author_id'][-1], text.encode('UTF-8')))
