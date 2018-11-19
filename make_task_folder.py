@@ -37,7 +37,9 @@ def clean_name(name):
     name = re.sub(r'/', ' or ', name)
     name = re.sub(r'&', ' and ', name)
     not_allowed_chars_pattern = r'[^a-zA-Z0-9.-_]'
-    return re.sub(not_allowed_chars_pattern, '_', name).lower()
+    name = re.sub(not_allowed_chars_pattern, '_', name).lower()
+    name = re.sub(r'_+', '_', name)
+    return name
 
 common = xmlrpclib.ServerProxy('%s/xmlrpc/2/common' % server)
 uid = common.authenticate(db, user, pwd, {})
