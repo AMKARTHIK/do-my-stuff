@@ -9,18 +9,21 @@ import argparse
 import pyperclip
 import pdb
 from datetime import datetime
+import base64
 
 parser = argparse.ArgumentParser()
 parser.add_argument('id', type=int, help='Enter the task or issue id to create task folder')
 parser.add_argument('-i', '--issue', action='store_true')
 parser.add_argument('-c', '--communications', action='store_true')
 parser.add_argument('-u', '--update', action='store_true')
+parser.add_argument('-a','--attachment', action='store_true')
 
 args = parser.parse_args()
 task_id = args.id
 is_issue = args.issue
 need_communication = args.communications
 update = args.update
+need_attachment = args.attachment
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -48,7 +51,7 @@ api = xmlrpclib.ServerProxy('%s/xmlrpc/2/object' % server)
 model = 'project.task'
 field_list = ['name','description','x_customer_description','project_id']
 if is_issue:
-    model = 'project.issue'
+    model = 'helpdesk.ticket'
     field_list = ['name','description','project_id']
 if need_communication or update:
     field_list += ['message_ids']
@@ -71,6 +74,8 @@ if details:
     if os.path.isdir(task_location) and os.path.isfile(file_path) and not update:
         pyperclip.copy(str(task_location))
         os.system("notify-send 'Task folder and its files already created in {0}'".format(task_location))
+        os.chdir(str(task_location))
+        os.system("/bin/bash")
 
     if not os.path.isdir(task_location):
         os.makedirs(task_location)
@@ -83,7 +88,7 @@ if details:
                 customer_description = customer_description.encode('UTF-8')
                 my_file.write('\n\nCustomer Specs: \n{0}'.format(customer_description))
             if need_communication:
-                msg_details = api.execute_kw(db, uid, pwd, 'mail.message', 'search_read', [[('author_id.id','!=',3),('id','in',detail['message_ids'])]],{'fields':['id','author_id','body'], 'order':'id'})
+                msg_details = api.execute_kw(db, uid, pwd, 'mail.message', 'search_read', [[('author_id.id','not in',[2,3]),('id','in',detail['message_ids'])]],{'fields':['id','author_id','body'], 'order':'id'})
                 if msg_details:
                     my_file.write('\n\nCommunications:\n')
                     for msg in msg_details:
@@ -91,6 +96,8 @@ if details:
                             text = re.sub('<.*?>', '\n', msg['body'])
                             text = re.sub('\n+', '\n', text)
                             my_file.write('\n{0}{1}\n'.format(msg['author_id'][-1], text.encode('UTF-8')))
+        os.chdir(str(task_location))
+        os.system("/bin/bash")
 
     if update:
         with open(file_path, "a") as my_file:
@@ -98,9 +105,21 @@ if details:
             os.system("notify-send 'Message updated in Task folder {0}'".format(task_location))
             today = datetime.today().strftime('%Y-%m-%d')
             my_file.write('\nNew Messages on {}\n'.format(today))
-            msg_details = api.execute_kw(db, uid, pwd, 'mail.message', 'search_read', [[('author_id.id','!=',3),('id','in',detail['message_ids'])]],{'fields':['id','author_id','body'], 'order':'id'})
+            msg_details = api.execute_kw(db, uid, pwd, 'mail.message', 'search_read', [[('author_id.id','not in',[2,3]),('id','in',detail['message_ids'])]],{'fields':['id','author_id','body'], 'order':'id'})
             for msg in msg_details:
                 if msg['body']:
                     text = re.sub('<.*?>', '\n', msg['body'])
                     text = re.sub('\n+', '\n', text)
                     my_file.write('\n{0}{1}\n'.format(msg['author_id'][-1], text.encode('UTF-8')))
+        os.chdir(str(task_location))
+        os.system("/bin/bash")
+
+    if need_attachment:
+        attachment_fields = ['datas_fname','res_model','store_fname','datas']
+        attachment_details = api.execute_kw(db, uid, pwd, 'ir.attachment','search_read', [[['res_model','=',model],['res_id','=',task_id]]], {'fields':attachment_fields})
+        for attachment_detail in attachment_details:
+            if not os.path.isfile(os.path.join(task_location, attachment_detail['datas_fname'])):
+                with open(os.path.join(task_location, attachment_detail['datas_fname']), 'w') as f:
+                    f.write(base64.decodestring(attachment_detail['datas']))
+
+

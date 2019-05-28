@@ -4,7 +4,8 @@ import os
 import subprocess
 
 apps_to_start = [
-        'firefox -p hangout-firefox',
+        # 'firefox -p hangout-firefox',
+        '/home/harmony/Desktop/Karthik/firefox/firefox -p hangout-firefox',
         '/home/harmony/Desktop/Karthik/firefox/firefox -p Odoo --new-tab=www.gaana.com',
         # 'hexchat',
         'thunderbird',

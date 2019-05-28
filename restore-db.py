@@ -1,34 +1,64 @@
 #!/home/harmony/Desktop/Karthik/karthik/DO-MY-STUFF/.venv/bin/python
 
 import os
+import re
 import subprocess
 import argparse
 import psycopg2
+import pdb
+import requests as req
+from requests.exceptions import ConnectionError
+from user_agent import generate_user_agent
+
+PORT_MAP = {'8':8069, '9': 9069, '10':10069, '11':11069, '12': 12069}
+
+pattern = r'(?P<db_name>(?P<customer>[A-Za-z0-9]+)_[a-zA-Z0-9]+_[v|V]+(?P<version>[0-9]+)_\d+_\d+_\d+)'
 
 parser = argparse.ArgumentParser()
-parser.add_argument("port", help="Enter port of the running server.")
-parser.add_argument("dump", help="Enter port of the running server.")
-parser.add_argument("name", help="Enter port of the running server.")
+parser.add_argument("dump", help="Db name")
+parser.add_argument("-c",'--custom', action="store_true", help="Customer DB name if needed.")
+
 args = parser.parse_args()
-port = args.port
+
 dump = os.path.abspath(args.dump)
-name = args.name
+match = re.search(pattern, os.path.basename(dump))
+if match:
+    values = match.groupdict()
+    if 'db_name' in values and args.custom:
+        name = raw_input("\nEnter the Custom Database name: ")
+    if 'db_name' in values and not args.custom:
+        name = values['db_name']
+    if 'version' in values:
+        port = PORT_MAP[values['version']]
+else:
+    name = raw_input("\nEnter the Database name to restore: ")
+    port = int(raw_input("\n Enter the running server port to restore: "))
 
-command = """curl -F 'master_pwd=karthik' -F 'backup_file=@{dump}' -F 'copy=true' -F 'name={name}' http://localhost:{port}/web/database/restore""".format(port=port,dump=dump,name=name)
+files = {'backup_file':open(dump, 'rb')}
+headers = {'User-Agent': generate_user_agent(navigator='firefox', os='linux')}
 
-try:
-    a = subprocess.check_output(command, shell=True)
-    conn_str = "dbname={!r} user='lsuser' host='localhost' password='lsuser'".format(name)
+def update_password(level=None):
+    print "Setting password at level {0}".format(level)
     try:
+        conn_str = "dbname={!r} user='lsuser' host='localhost' password='lsuser'".format(name)
         conn = psycopg2.connect(conn_str)
         cur = conn.cursor()
-        cur.execute("update res_users set password={!r} where login='admin'".format('$pbkdf2-sha512$25000$DmGsVYpxrnUOAaBUak2pNQ$z.G9HCdTYsuUC66quhYfgbP6yIcHq7EfVZFRToOP6RzVha851B9t5a.CaP6jLABKRkYFrlcjFj.ISARujMn42g' if port == '12069' else 'admin'))
+        cur.execute("update res_users set password='admin' where login='admin'")
+        cur.execute("delete from ir_config_parameter where key='report.url'")
+        cur.execute("delete from fetchmail_server")
+        cur.execute("delete from ir_mail_server")
         conn.commit()
         cur.close()
+        conn.close()
     except:
-        print "Connection errors"
-    finally:
-        if conn is not None:
-            conn.close()
-except Exception:
-    print "db-restore-error"
+        print "Database Connection errors"
+
+try:
+    # pdb.set_trace()
+    r = req.post('http://localhost:{0}/web/database/restore'.format(port),headers=headers, files=files, data={'master_pwd':'karthik', 'copy':'true', 'name':'{0}'.format(name)})
+    update_password(level='1')
+except ConnectionError as ce:
+    update_password(level='2')
+except Exception as e:
+    if not isinstance(e, ConnectionError):
+        raise e
