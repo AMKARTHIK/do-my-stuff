@@ -4,13 +4,12 @@ import os
 import subprocess
 
 apps_to_start = [
-        # 'firefox -p hangout-firefox',
-        '/home/harmony/Desktop/Karthik/firefox/firefox -p hangout-firefox',
-        '/home/harmony/Desktop/Karthik/firefox/firefox -p Odoo --new-tab=www.gaana.com',
+        '/usr/bin/firefox -p normal',
+        '/usr/bin/firefox -p dev-new --new-tab=www.gaana.com',
         # 'hexchat',
         'thunderbird',
         'google-chrome --app-id=knipolnnllmklapflnccelgolnpehhpl',
-        'tilix'
+        'tilix --maximize'
         ]
 
 for app in apps_to_start:

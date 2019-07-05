@@ -74,8 +74,8 @@ if details:
     if os.path.isdir(task_location) and os.path.isfile(file_path) and not update:
         pyperclip.copy(str(task_location))
         os.system("notify-send 'Task folder and its files already created in {0}'".format(task_location))
-        os.chdir(str(task_location))
-        os.system("/bin/bash")
+        # os.chdir(str(task_location))
+        # os.system("/bin/bash")
 
     if not os.path.isdir(task_location):
         os.makedirs(task_location)
@@ -96,8 +96,8 @@ if details:
                             text = re.sub('<.*?>', '\n', msg['body'])
                             text = re.sub('\n+', '\n', text)
                             my_file.write('\n{0}{1}\n'.format(msg['author_id'][-1], text.encode('UTF-8')))
-        os.chdir(str(task_location))
-        os.system("/bin/bash")
+        # os.chdir(str(task_location))
+        # os.system("/bin/bash")
 
     if update:
         with open(file_path, "a") as my_file:
@@ -111,8 +111,6 @@ if details:
                     text = re.sub('<.*?>', '\n', msg['body'])
                     text = re.sub('\n+', '\n', text)
                     my_file.write('\n{0}{1}\n'.format(msg['author_id'][-1], text.encode('UTF-8')))
-        os.chdir(str(task_location))
-        os.system("/bin/bash")
 
     if need_attachment:
         attachment_fields = ['datas_fname','res_model','store_fname','datas']
@@ -122,4 +120,6 @@ if details:
                 with open(os.path.join(task_location, attachment_detail['datas_fname']), 'w') as f:
                     f.write(base64.decodestring(attachment_detail['datas']))
 
+    # os.chdir(str(task_location))
+    # os.system("/bin/bash")
 

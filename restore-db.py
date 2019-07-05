@@ -29,6 +29,7 @@ if match:
     if 'db_name' in values and not args.custom:
         name = values['db_name']
     if 'version' in values:
+        ver = values['version']
         port = PORT_MAP[values['version']]
 else:
     name = raw_input("\nEnter the Database name to restore: ")
@@ -43,6 +44,10 @@ def update_password(level=None):
         conn_str = "dbname={!r} user='lsuser' host='localhost' password='lsuser'".format(name)
         conn = psycopg2.connect(conn_str)
         cur = conn.cursor()
+        if ver == 12:
+            cur.execute("update res_users set password='admin', login='admin' where id=2")
+        if ver != 12:
+            cur.execute("update res_users set login='admin', password='admin' where id=1")
         cur.execute("update res_users set password='admin' where login='admin'")
         cur.execute("delete from ir_config_parameter where key='report.url'")
         cur.execute("delete from fetchmail_server")
