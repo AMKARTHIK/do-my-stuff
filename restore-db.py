@@ -44,11 +44,11 @@ def update_password(level=None):
         conn_str = "dbname={!r} user='lsuser' host='localhost' password='lsuser'".format(name)
         conn = psycopg2.connect(conn_str)
         cur = conn.cursor()
-        if ver == 12:
+        if int(ver) == 12:
             cur.execute("update res_users set password='admin', login='admin' where id=2")
-        if ver != 12:
+        if int(ver) != 12:
             cur.execute("update res_users set login='admin', password='admin' where id=1")
-        cur.execute("update res_users set password='admin' where login='admin'")
+        # cur.execute("update res_users set password='admin' where login='admin'")
         cur.execute("delete from ir_config_parameter where key='report.url'")
         cur.execute("delete from fetchmail_server")
         cur.execute("delete from ir_mail_server")
@@ -59,7 +59,6 @@ def update_password(level=None):
         print "Database Connection errors"
 
 try:
-    # pdb.set_trace()
     r = req.post('http://localhost:{0}/web/database/restore'.format(port),headers=headers, files=files, data={'master_pwd':'karthik', 'copy':'true', 'name':'{0}'.format(name)})
     update_password(level='1')
 except ConnectionError as ce:

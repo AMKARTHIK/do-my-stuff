@@ -1,0 +1,62 @@
+2019-03-22 07:14:31,730 6626 ERROR NCC_Master odoo.sql_db: bad query: b'UPDATE "fleet_vehicle" SET "oil_change_tolerance"=15371.0,"write_uid"=2,"write_date"=(now() at time zone \'UTC\') WHERE id IN (1242)'
+ERROR: deadlock detected
+DETAIL:  Process 6659 waits for ShareLock on transaction 61516; blocked by process 6666.
+Process 6666 waits for ShareLock on transaction 55761; blocked by process 6659.
+HINT:  See server log for query details.
+CONTEXT:  while updating tuple (100,23) in relation "fleet_vehicle"
+============================================================================================================================================================================================================================================
+
+2019-03-22 09:00:00,058 14623 ERROR NCC_Master odoo.models: Error while loading record 
+Traceback (most recent call last):
+  File "/opt/odoo-12/src/12.0/odoo/models.py", line 896, in flush
+    rec = self._load_records([rec_data], mode == 'update')
+  File "/opt/odoo-12/src/12.0/odoo/models.py", line 3815, in _load_records
+    records = self.create([data['values'] for data in to_create])
+  File "<decorator-gen-210>", line 2, in create
+  File "/opt/odoo-12/src/12.0/odoo/api.py", line 433, in _model_create_single
+    return self.browse().concat(*(create(self, vals) for vals in arg))
+  File "/opt/odoo-12/src/12.0/odoo/api.py", line 433, in <genexpr>
+    return self.browse().concat(*(create(self, vals) for vals in arg))
+  File "/opt/odoo-12/src/nccrc/nccrc/nccrc/models/fleet_vehicle_cost.py", line 40, in create
+    return super(FleetVehicleLogServices, self).create(vals)
+  File "<decorator-gen-3>", line 2, in create
+  File "/opt/odoo-12/src/12.0/odoo/api.py", line 451, in _model_create_multi
+    return create(self, [arg])
+  File "/opt/odoo-12/src/12.0/odoo/models.py", line 3505, in create
+    parent.write(data['inherited'][model_name])
+  File "/opt/odoo-12/src/12.0/odoo/models.py", line 3306, in write
+    fields[0].determine_inverse(records)
+  File "/opt/odoo-12/src/12.0/odoo/fields.py", line 1097, in determine_inverse
+    getattr(records, self.inverse)()
+  File "/opt/odoo-12/src/12.0/addons/fleet/models/fleet_vehicle_cost.py", line 44, in _set_odometer
+    raise UserError(_('Emptying the odometer value of a vehicle is not allowed.'))
+odoo.exceptions.UserError: ('Emptying the odometer value of a vehicle is not allowed.', '')
+============================================================================================================================================================================================================================================
+
+2019-03-22 20:04:12,625 14627 INFO NCC_Master werkzeug: 127.0.0.1 - - [22/Mar/2019 20:04:12] "POST /web/dataset/call_kw/fleet.vehicle.log.contract/read HTTP/1.0" 200 - 37 0.025 0.032
+2019-03-22 20:04:25,724 14624 INFO NCC_Master odoo.modules.registry: Invalidating all model caches after database signaling. 
+2019-03-22 20:04:25,733 14624 INFO NCC_Master werkzeug: 127.0.0.1 - - [22/Mar/2019 20:04:25] "POST /web_studio/get_default_value HTTP/1.0" 200 - 7 0.004 0.007
+2019-03-22 20:04:31,840 14623 INFO NCC_Master odoo.modules.registry: Invalidating all model caches after database signaling. 
+2019-03-22 20:04:31,899 14623 INFO NCC_Master odoo.addons.base.models.ir_ui_view: Element '<xpath expr="//field[@name='amount'][not(ancestor::field)]">' cannot be located in parent view
+
+Error context:
+View `Odoo Studio: fleet.vehicle.log_contract.form customization`
+[view_id: 1075, xml_id: studio_customization.odoo_studio_fleet_ve_6885e657-4fe5-416d-bed2-569e40cc6790, model: fleet.vehicle.log.contract, parent_id: 728] 
+============================================================================================================================================================================================================================================
+
+
+============================================================================================================================================================================================================================================
+
+
+============================================================================================================================================================================================================================================
+
+
+============================================================================================================================================================================================================================================
+
+
+============================================================================================================================================================================================================================================
+
+
+============================================================================================================================================================================================================================================
+
+
