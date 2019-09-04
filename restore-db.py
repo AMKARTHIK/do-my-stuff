@@ -1,10 +1,12 @@
 #!/home/harmony/Desktop/Karthik/karthik/DO-MY-STUFF/.venv/bin/python
 
 import os
+import sys
 import re
 import subprocess
 import argparse
 import psycopg2
+# from psycopg2-binary import psycopg2
 import pdb
 import requests as req
 from requests.exceptions import ConnectionError
@@ -24,10 +26,15 @@ dump = os.path.abspath(args.dump)
 match = re.search(pattern, os.path.basename(dump))
 if match:
     values = match.groupdict()
-    if 'db_name' in values and args.custom:
-        name = raw_input("\nEnter the Custom Database name: ")
-    if 'db_name' in values and not args.custom:
+    name = False
+    if 'db_name' in values:
         name = values['db_name']
+    if name and args.custom:
+        extra = raw_input("\nEnter the extra name: ")
+        name = values['db_name'] + '_' + extra
+    if not name:
+        print "Some error in db name"
+        sys.exit()
     if 'version' in values:
         ver = values['version']
         port = PORT_MAP[values['version']]
