@@ -7,7 +7,6 @@ import re
 import xmlrpclib
 import argparse
 import pyperclip
-import pdb
 from datetime import datetime
 import base64
 
@@ -110,9 +109,9 @@ def create_task_folders_files(detail, task_location, file_path, sub=False):
         os.system("notify-send 'Task folder created in {0}'".format(task_location))
 
     if not sub:
-        download_attachments(task_id, model, task_location)
+        download_attachments(detail['id'], model, task_location)
     if sub:
-        download_attachments(task_id, sub_model, task_location)
+        download_attachments(detail['id'], sub_model, task_location)
 
     create_communications(detail, task_location)
 
