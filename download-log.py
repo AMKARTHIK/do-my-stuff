@@ -25,8 +25,9 @@ def get_available_links(req, url_list):
     for url in url_list:
         res = req.get(url)
         soup = bs(res.text, 'html.parser')
-        soup_links = soup.find_all('a', title=True)
-        available_links = [lnks.get_text() for lnks in soup_links]
+        # print soup.prettify()
+        soup_links = soup.find_all('a')
+        available_links = [lnks.get_text() for lnks in soup_links if lnks.get_text() not in ['Parent Directory','modern browsers','powered by h5ai']]
         return_list = return_list + available_links
     return return_list
 
@@ -68,7 +69,8 @@ with requests.Session() as req:
         os.mkdir(os.path.abspath(folder))
 
     for file_to_download in log_files_to_download:
-        log_file_download_url = urlparse.urljoin(choosen_log_folder_url[0], file_to_download)
+        # log_file_download_url = urlparse.urljoin(choosen_log_folder_url[0], file_to_download)
+        log_file_download_url = '/'.join((choosen_log_folder_url[0], file_to_download))
         log_file_downloaded = req.get(log_file_download_url)
         with open(os.path.join(os.path.abspath(folder),file_to_download), 'wb') as new_log_file:
             new_log_file.write(log_file_downloaded.content)

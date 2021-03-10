@@ -1,10 +1,10 @@
-#!/home/harmony/Desktop/Karthik/karthik/DO-MY-STUFF/.venv/bin/python
+#!/opt/helpers/.venv/bin/python
 
 import os
 import sys
 from sys import argv
 import re
-import xmlrpclib
+import xmlrpc.client
 import argparse
 import pyperclip
 from datetime import datetime
@@ -15,15 +15,17 @@ parser.add_argument('id', type=int, help='Enter the task or issue id to create t
 parser.add_argument('-i', '--issue', action='store_true')
 # parser.add_argument('-c', '--communications', action='store_true')
 parser.add_argument('-s', '--subissue', action='store_true')
-
+parser.add_argument('-A','--no_attachment_needed', action='store_true')
 # for testing
 parser.add_argument('-t','--test', action='store_true')
+
 
 args = parser.parse_args()
 
 task_id = args.id
 is_issue = args.issue
 need_subissue = args.subissue
+need_attachment = not args.no_attachment_needed
 
 # if is_issue or need_subissue:
 #     args.communications = True
@@ -34,7 +36,7 @@ is_test = args.test
 
 
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv(dotenv_path="/opt/helpers/.env")
 
 # script, task_id = argv
 
@@ -56,9 +58,9 @@ def clean_name(name):
     name = re.sub(r'_+', '_', name)
     return name
 
-common = xmlrpclib.ServerProxy('%s/xmlrpc/2/common' % server)
+common = xmlrpc.client.ServerProxy('%s/xmlrpc/2/common' % server)
 uid = common.authenticate(db, user, pwd, {})
-api = xmlrpclib.ServerProxy('%s/xmlrpc/2/object' % server)
+api = xmlrpc.client.ServerProxy('%s/xmlrpc/2/object' % server)
 
 model = 'project.task'
 field_list = ['name','description','x_customer_description','project_id', 'message_ids']
@@ -88,10 +90,11 @@ def download_attachments(rec_id, model, task_location):
     attachment_details = api.execute_kw(db, uid, pwd, 'ir.attachment','search_read', [[['res_model','=',model],['res_id','=',rec_id]]], {'fields':attachment_fields})
     for attachment_detail in attachment_details:
         if not os.path.isfile(os.path.join(task_location, attachment_detail['datas_fname'])):
-            with open(os.path.join(task_location, attachment_detail['datas_fname']), 'w') as f:
-                f.write(base64.decodestring(attachment_detail['datas']))
+            with open(os.path.join(task_location, attachment_detail['datas_fname']), 'wb') as f:
+                bin_value = base64.b64decode(attachment_detail['datas'])
+                f.write(bin_value)
 
-def create_task_folders_files(detail, task_location, file_path, sub=False):
+def create_task_folders_files(detail, task_location, file_path, sub=False, attachment_needed=True):
 
     if os.path.isdir(task_location) and os.path.isfile(file_path):
         os.system("notify-send 'Task folder and its specs files already created in {0}'".format(task_location))
@@ -108,10 +111,11 @@ def create_task_folders_files(detail, task_location, file_path, sub=False):
                 my_file.write('\n\nCustomer Specs: \n{0}'.format(customer_description))
         os.system("notify-send 'Task folder created in {0}'".format(task_location))
 
-    if not sub:
-        download_attachments(detail['id'], model, task_location)
-    if sub:
-        download_attachments(detail['id'], sub_model, task_location)
+    if attachment_needed:
+        if not sub:
+            download_attachments(detail['id'], model, task_location)
+        if sub:
+            download_attachments(detail['id'], sub_model, task_location)
 
     create_communications(detail, task_location)
 
@@ -128,7 +132,7 @@ for detail in details:
 
 
     # create task_folder_files
-    create_task_folders_files(detail, task_location, file_path)
+    create_task_folders_files(detail, task_location, file_path, attachment_needed=need_attachment)
 
 
     # create sub issue folders and files:
@@ -140,7 +144,7 @@ for detail in details:
             sub_task_location = os.path.join(sub_task_location, sub_issue_name)
             subfile_name = 'info_{0}.txt'.format(sub_issue_detail['id'])
             sub_file_path = os.path.join(sub_task_location, subfile_name)
-            create_task_folders_files(sub_issue_detail, sub_task_location, sub_file_path, sub=True)
+            create_task_folders_files(sub_issue_detail, sub_task_location, sub_file_path, sub=True, attachment_needed=need_attachment)
 
     # copy the task location to clipboard for users purpose
     pyperclip.copy(str(task_location))

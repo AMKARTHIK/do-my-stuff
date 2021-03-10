@@ -12,7 +12,7 @@ import requests as req
 from requests.exceptions import ConnectionError
 from user_agent import generate_user_agent
 
-PORT_MAP = {'8':8069, '9': 9069, '10':10069, '11':11069, '12': 12069}
+PORT_MAP = {'8':8069, '9': 9069, '10':10069, '11':11069, '12': 12069, '13': 13069}
 
 pattern = r'(?P<db_name>(?P<customer>[A-Za-z0-9]+)_[a-zA-Z0-9]+_[v|V]+(?P<version>[0-9]+)_\d+_\d+_\d+)'
 
@@ -38,6 +38,7 @@ if match:
     if 'version' in values:
         ver = values['version']
         port = PORT_MAP[values['version']]
+    customer = values['customer']
 else:
     name = raw_input("\nEnter the Database name to restore: ")
     port = int(raw_input("\n Enter the running server port to restore: "))
@@ -48,17 +49,25 @@ headers = {'User-Agent': generate_user_agent(navigator='firefox', os='linux')}
 def update_password(level=None):
     print "Setting password at level {0}".format(level)
     try:
-        conn_str = "dbname={!r} user='lsuser' host='localhost' password='lsuser'".format(name)
+        if customer in ['KEN']:
+            conn_str = "dbname={!r} user='postgres' host='localhost' port='5452' password='postgres'".format(name)
+        elif int(ver) == 13:
+            conn_str = "dbname={!r} user='postgres' host='localhost' port='5442' password='postgres'".format(name)
+        else:
+            conn_str = "dbname={!r} user='lsuser' host='localhost' port='5432' password='lsuser'".format(name)
         conn = psycopg2.connect(conn_str)
         cur = conn.cursor()
-        if int(ver) == 12:
+        if int(ver) >= 12:
             cur.execute("update res_users set password='admin', login='admin' where id=2")
-        if int(ver) != 12:
+        else:
             cur.execute("update res_users set login='admin', password='admin' where id=1")
         # cur.execute("update res_users set password='admin' where login='admin'")
         cur.execute("delete from ir_config_parameter where key='report.url'")
         cur.execute("delete from fetchmail_server")
         cur.execute("delete from ir_mail_server")
+        cur.execute("update ir_cron set active='f'")
+        if int(ver) <= 12:
+            cur.execute("update payment_acquirer set environment='test'")
         conn.commit()
         cur.close()
         conn.close()

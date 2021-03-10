@@ -1,6 +1,5 @@
-#!/home/harmony/Desktop/Karthik/karthik/DO-MY-STUFF/.venv/bin/python
+#!/opt/helpers/.venv/bin/python
 
-import commands
 import os
 from pprint import pprint
 from sys import argv
@@ -32,15 +31,14 @@ for d in dir_list:
 
 #pprint(check_links_folders)
 
-for key, val in check_links_folders.iteritems():
+for key, val in check_links_folders.items():
     for v in val:
         link = "{0}/{1}".format(DEST_DIT, v)
         if not os.path.islink(link):
             src = "{0}/{1}/{2}".format(SOURCE_DIR, key, v)
             dst = link
             os.symlink(src, dst)
-            print "softlinks created from {2}{0}{3} to {2}{1}{3}".format(src,
-                    dst,OKBLUE,ENDC)
+            print("softlinks created from {2}{0}{3} to {2}{1}{3}".format(src,dst,OKBLUE,ENDC))
 
 # delete the broken link
 
@@ -53,4 +51,4 @@ broken_links = [x for x in next(os.walk(DEST_DIT))[2]]
 for blink in broken_links:
     broken_link_path = '{0}/{1}'.format(DEST_DIT, blink)
     os.unlink(broken_link_path)
-    print "The {2}{0}{1} link removed from the DEST DIR".format(broken_link_path,ENDC,FAIL)
+    print("The {2}{0}{1} link removed from the DEST DIR".format(broken_link_path,ENDC,FAIL))

@@ -1,4 +1,4 @@
-#!/home/harmony/Desktop/Karthik/karthik/DO-MY-STUFF/.venv/bin/python
+#!/opt/helpers/.venv/bin/python
 
 import argparse
 import os
@@ -27,9 +27,9 @@ for repo in repo_list:
                     unclean_repo[repo].append(filepath)
                 else:
                     unclean_repo[repo] = [filepath]
-for path, files in unclean_repo.iteritems():
-    print "Repo {} contains some changed files".format(path)
+for path, files in unclean_repo.items():
+    print("Repo {} contains some changed files".format(path))
     for f in files:
-        print f
-    print "\n"
+        print(f)
+    print("\n")
 
